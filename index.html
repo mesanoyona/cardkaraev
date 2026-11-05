@@ -1,0 +1,204 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Ареометр — интерактивная лаборатория</title>
+<style>
+:root{--bg:#071522;--panel:#10283b;--panel2:#17364d;--line:#29485e;--text:#edf7ff;--muted:#adc2d2;--cyan:#54d9e8;--blue:#63a8ff;--gold:#ffd477;--green:#69e0aa;--red:#ff8f9a}
+*{box-sizing:border-box}html{scroll-behavior:smooth}body{margin:0;background:radial-gradient(ellipse at 80% -10%,#1a4b65 0,transparent 38%),var(--bg);color:var(--text);font:16px/1.65 system-ui,-apple-system,Segoe UI,sans-serif}
+header{padding:54px 20px 42px;text-align:center;background:linear-gradient(120deg,#0d2b42cc,#081522aa)}h1{font-size:clamp(2.4rem,7vw,4.6rem);line-height:1.03;margin:12px 0}h2{font-size:clamp(1.5rem,4vw,2rem);margin:0 0 14px}h3{margin:5px 0 8px}.lead{max-width:760px;margin:auto;color:var(--muted);font-size:1.1rem}.eyebrow{color:var(--cyan);font-weight:800;letter-spacing:.13em;font-size:.78rem}
+nav{position:sticky;top:0;z-index:10;display:flex;gap:7px;justify-content:center;flex-wrap:wrap;padding:10px;background:#071522ed;backdrop-filter:blur(12px);border-block:1px solid #ffffff18}nav a{color:var(--muted);text-decoration:none;padding:7px 12px;border-radius:18px;font-size:.92rem}nav a:hover{background:var(--panel2);color:white}
+main{max-width:1120px;margin:auto;padding:24px 18px 70px}section{margin:30px 0;scroll-margin-top:80px}.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:15px}.card{background:linear-gradient(145deg,var(--panel),#0b1d2c);border:1px solid #ffffff18;border-radius:19px;padding:21px;box-shadow:0 14px 35px #0002}.card p{color:var(--muted);margin:7px 0}.symbol{font-size:1.9rem}.pill{display:inline-block;padding:3px 10px;border:1px solid #54d9e866;border-radius:20px;color:var(--cyan);font-size:.82rem}.muted{color:var(--muted)}.callout{background:#54d9e812;border-left:3px solid var(--cyan);padding:12px 15px;border-radius:9px;margin:14px 0;color:#d8f2fa}.gold{border-left-color:var(--gold);background:#ffd47712}
+.split{display:grid;grid-template-columns:1.1fr .9fr;gap:18px;align-items:stretch}@media(max-width:760px){.split{grid-template-columns:1fr}}
+button,select{font:inherit}button{border:0;border-radius:11px;padding:10px 15px;background:var(--cyan);color:#06202b;font-weight:800;cursor:pointer}button:hover{filter:brightness(1.08)}button.secondary{background:#24465e;color:var(--text)}button.ghost{background:transparent;border:1px solid var(--line);color:var(--text)}button:focus-visible,a:focus-visible,input:focus-visible,select:focus-visible{outline:2px solid var(--gold);outline-offset:3px}
+label{display:block;color:var(--muted);margin:12px 0 5px}input[type=range]{width:100%;accent-color:var(--cyan)}input[type=number],select{width:100%;background:#091b29;color:var(--text);border:1px solid var(--line);padding:10px;border-radius:10px}
+.lab{display:grid;grid-template-columns:1fr 1fr;gap:18px}@media(max-width:720px){.lab{grid-template-columns:1fr}}
+.visual{min-height:340px;position:relative;overflow:hidden;border-radius:15px;background:linear-gradient(180deg,#12354d,#0b2337);display:flex;justify-content:center;align-items:flex-end}
+.glass{position:absolute;bottom:23px;width:190px;height:255px;border:4px solid #c9eff6aa;border-top:0;border-radius:0 0 24px 24px;background:#b7e8f10b;overflow:hidden}
+.fluid{position:absolute;inset:auto 0 0;height:68%;background:linear-gradient(180deg,#65e3e899,#2384bbaa);transition:height .25s}
+.fluid:before{content:"";position:absolute;top:-5px;left:0;right:0;height:10px;border-radius:50%;background:#9bf3fa88}
+.instrument{position:absolute;z-index:3;left:50%;transform:translateX(-50%);bottom:80px;transition:bottom .25s;display:flex;align-items:center;flex-direction:column}
+.stem{height:155px;width:17px;border:1px solid #84afc0;border-radius:8px 8px 2px 2px;background:linear-gradient(90deg,#b6d9e5,#fff 48%,#a8cad8)}
+.bulb{width:37px;height:58px;border:1px solid #84afc0;border-radius:50%;background:radial-gradient(circle at 35% 25%,#fff,#c5e8f1 65%,#7daabd)}
+.tickmarks{position:absolute;z-index:4;left:calc(50% + 20px);bottom:115px;color:#08283a;font-size:10px;line-height:1.9;font-weight:900}
+.waterline{position:absolute;bottom:196px;width:190px;border-top:1px dashed #d8fbff99;z-index:2}
+.stat{font-size:2rem;color:var(--cyan);font-weight:850;line-height:1.2}.stat small{font-size:.9rem;color:var(--muted);font-weight:500}
+.metrics{display:grid;grid-template-columns:repeat(2,1fr);gap:10px;margin:14px 0}.metric{background:#081b29;padding:12px;border-radius:12px}.metric b{display:block;font-size:1.25rem;color:var(--cyan)}
+.steps{counter-reset:s}.step{position:relative;padding:0 0 16px 44px;color:var(--muted)}.step:before{counter-increment:s;content:counter(s);position:absolute;left:0;top:0;width:30px;height:30px;border-radius:50%;display:grid;place-items:center;background:#1b4961;color:var(--cyan);font-weight:800}
+.formula{font-size:1.3rem;text-align:center;padding:16px;background:#081b29;border-radius:12px;color:var(--gold);font-weight:800}
+.tabs{display:flex;gap:8px;flex-wrap:wrap;margin:10px 0}.tab.active{background:var(--cyan);color:#06202b}.tab:not(.active){background:#24465e;color:var(--text)}
+.quiz-q{padding:16px 0;border-bottom:1px solid #ffffff18}.answers{display:grid;gap:8px;margin-top:10px}.answers button{text-align:left;background:#1a3850;color:var(--text);border:1px solid #ffffff18}.answers button.chosen{outline:2px solid var(--cyan)}.answers button.good{background:#164c3a;border-color:var(--green)}.answers button.bad{background:#5b2930;border-color:var(--red)}
+#quizResult{font-weight:800;color:var(--gold);margin-left:10px}.bar{height:9px;border-radius:9px;background:#071522;overflow:hidden}.bar span{display:block;height:100%;width:0;background:var(--cyan);transition:width .3s}
+table{width:100%;border-collapse:collapse;margin-top:10px}td,th{text-align:left;padding:10px;border-bottom:1px solid #ffffff18}th{color:var(--cyan)}footer{text-align:center;padding:30px;color:var(--muted);border-top:1px solid #ffffff18}
+@media(prefers-reduced-motion:reduce){*{scroll-behavior:auto!important;transition:none!important}}
+</style>
+</head>
+<body>
+<header>
+<div class="eyebrow">ИНТЕРАКТИВНАЯ ЛАБОРАТОРИЯ ФИЗИКИ</div>
+<h1>Ареометр</h1>
+<p class="lead">Исследуй прибор, разберись в законе Архимеда, проведи виртуальное измерение плотности и проверь себя.</p>
+<p style="margin-top:22px"><span class="pill">Теория</span> <span class="pill">Виртуальный опыт</span> <span class="pill">Расчёты</span> <span class="pill">Тест</span></p>
+</header>
+<nav><a href="#about">Устройство</a><a href="#physics">Физика</a><a href="#lab">Опыт</a><a href="#calculator">Расчёт</a><a href="#uses">Применение</a><a href="#quiz">Тест</a></nav>
+<main>
+<section id="about">
+<h2>1. Что такое ареометр?</h2>
+<div class="grid">
+<div class="card"><div class="symbol">🧪</div><h3>Назначение</h3><p>Ареометр — прибор для измерения плотности жидкости. В зависимости от вида и шкалы он может показывать также концентрацию раствора или другую связанную величину.</p></div>
+<div class="card"><div class="symbol">🔬</div><h3>Устройство</h3><p>Обычно это герметичная стеклянная трубка: сверху узкий стержень со шкалой, снизу расширенная часть с грузом, который удерживает прибор вертикально.</p></div>
+<div class="card"><div class="symbol">📏</div><h3>Шкала</h3><p>Шкалу считывают на уровне поверхности жидкости — по правилам, указанным для конкретного прибора. Значение зависит от калибровки и температуры.</p></div>
+</div>
+<div class="card" style="margin-top:15px">
+<h3>Основные части ареометра</h3>
+<div class="split">
+<div><p><b>1. Узкий стержень</b> — на нём расположена измерительная шкала.</p><p><b>2. Корпус-поплавок</b> — вытесняет жидкость и обеспечивает плавание.</p><p><b>3. Утяжелитель</b> — находится в нижней части и помогает прибору стоять вертикально.</p></div>
+<div class="callout"><b>Важно:</b> ареометры бывают общего назначения и специальные — например, сахаромеры, спиртомеры и аккумуляторные ареометры. Их шкалы не взаимозаменяемы.</div>
+</div>
+</div>
+</section>
+<section id="physics">
+<h2>2. Почему ареометр плавает?</h2>
+<div class="card">
+<p>На ареометр действуют две главные силы: сила тяжести направлена вниз, а выталкивающая сила жидкости — вверх. Когда прибор спокойно плавает, эти силы уравновешены.</p>
+<div class="formula">F<sub>A</sub> = ρ · g · V</div>
+<p class="muted">F<sub>A</sub> — выталкивающая сила; ρ — плотность жидкости; g — ускорение свободного падения; V — объём погружённой части.</p>
+<div class="grid">
+<div class="callout"><b>Плотность больше</b><br>Для равновесия нужно вытеснить меньший объём жидкости. Ареометр погружается меньше.</div>
+<div class="callout gold"><b>Плотность меньше</b><br>Нужно вытеснить больший объём жидкости. Ареометр погружается глубже.</div>
+</div>
+</div>
+</section>
+<section id="lab">
+<h2>3. Виртуальный лабораторный опыт</h2>
+<div class="card">
+<p>Передвигай ползунок или выбирай жидкость. Посмотри, как меняется положение ареометра. Модель показывает качественную зависимость, а не калибровку реального прибора.</p>
+<div class="lab">
+<div class="visual" aria-label="Схема ареометра, плавающего в сосуде с жидкостью">
+<div class="glass"><div class="fluid" id="fluid"></div></div>
+<div class="waterline"></div>
+<div class="instrument" id="instrument"><div class="stem"></div><div class="bulb"></div></div>
+<div class="tickmarks">1.20<br>1.15<br>1.10<br>1.05<br>1.00</div>
+</div>
+<div>
+<label for="liquidChoice">Выбери жидкость</label>
+<select id="liquidChoice"><option value="1.00">Вода — примерно 1,00 г/см³</option><option value="0.92">Растительное масло — примерно 0,92 г/см³</option><option value="1.10">Солёная вода — условный пример 1,10 г/см³</option><option value="1.20">Концентрированный раствор — условный пример 1,20 г/см³</option></select>
+<label for="rho">Или настрой плотность: <b id="rhoText">1,00 г/см³</b></label>
+<input id="rho" type="range" min=".80" max="1.30" step=".01" value="1">
+<div class="metrics">
+<div class="metric"><span class="muted">Плотность</span><b id="densityValue">1,00</b><small>г/см³</small></div>
+<div class="metric"><span class="muted">Погружение</span><b id="submergeValue">65%</b><small>условная модель</small></div>
+</div>
+<p id="labExplanation" class="callout">Плотность близка к плотности воды. Ареометр погружён на среднюю глубину.</p>
+<button class="secondary" id="resetLab">Сбросить опыт</button>
+</div>
+</div>
+</div>
+</section>
+<section id="calculator">
+<h2>4. Мини-калькулятор плотности</h2>
+<div class="card split">
+<div><p>Плотность — это масса вещества, делённая на его объём. Введи массу и объём, чтобы рассчитать плотность образца.</p>
+<div class="formula">ρ = m / V</div>
+<label for="mass">Масса, граммы (г)</label><input type="number" id="mass" min="0" step="any" value="100">
+<label for="volume">Объём, миллилитры (мл)</label><input type="number" id="volume" min="0" step="any" value="100">
+<p style="margin-top:15px"><button id="calculate">Рассчитать</button></p></div>
+<div class="metric" style="display:flex;flex-direction:column;justify-content:center"><span class="muted">Полученная плотность</span><div class="stat" id="calcResult">1,00</div><small>г/см³ (так как 1 мл = 1 см³)</small><p id="calcMessage" class="muted">При массе 100 г и объёме 100 мл плотность равна 1 г/см³.</p></div>
+</div>
+<div class="callout gold">Калькулятор вычисляет плотность образца по массе и объёму. Ареометр определяет её другим способом — по глубине погружения.</div>
+</section>
+<section id="uses">
+<h2>5. Где используют ареометры?</h2>
+<div class="grid">
+<div class="card"><div class="symbol">🚗</div><h3>Аккумуляторы</h3><p>Специальным ареометром проверяют плотность электролита, что помогает оценить состояние раствора.</p></div>
+<div class="card"><div class="symbol">🥛</div><h3>Пищевая отрасль</h3><p>Специальные приборы используют для контроля свойств молока, сиропов и других жидкостей.</p></div>
+<div class="card"><div class="symbol">🍇</div><h3>Производство напитков</h3><p>Сахаромеры и другие приборы помогают оценивать концентрацию растворённых веществ.</p></div>
+<div class="card"><div class="symbol">🏫</div><h3>Учебные лаборатории</h3><p>С помощью ареометра изучают плотность, плавание тел и действие выталкивающей силы.</p></div>
+</div>
+</section>
+<section id="procedure">
+<h2>6. Как правильно провести измерение?</h2>
+<div class="card">
+<div class="step"><b>Подготовь прибор и цилиндр.</b><br>Выбери ареометр, подходящий для исследуемой жидкости и диапазона плотности.</div>
+<div class="step"><b>Налей жидкость.</b><br>Используй чистый высокий сосуд, чтобы прибор не касался стенок и дна.</div>
+<div class="step"><b>Осторожно опусти ареометр.</b><br>Он должен свободно плавать вертикально. Удали пузырьки, если они прилипли к прибору.</div>
+<div class="step"><b>Дождись покоя.</b><br>Не считывай показания, пока прибор качается.</div>
+<div class="step"><b>Сними показание.</b><br>Смотри на шкалу на уровне поверхности жидкости и учитывай инструкцию к конкретному ареометру.</div>
+<div class="callout gold">Работай только с безопасными учебными жидкостями и соблюдай правила лаборатории. Не пробуй исследуемые растворы на вкус.</div>
+</div>
+</section>
+<section id="quiz">
+<h2>7. Проверь свои знания</h2>
+<div class="card">
+<p class="muted">Выбери один ответ в каждом вопросе, затем нажми «Проверить».</p>
+<div id="questions"></div>
+<div class="bar"><span id="progress"></span></div>
+<p><button id="checkQuiz">Проверить ответы</button> <button class="ghost" id="restartQuiz">Пройти заново</button><span id="quizResult"></span></p>
+</div>
+</section>
+<section>
+<h2>8. Главное, что нужно запомнить</h2>
+<div class="card"><p>Ареометр — прибор для измерения плотности жидкостей. Он плавает благодаря выталкивающей силе, описываемой законом Архимеда. В более плотной жидкости ареометр погружается меньше, в менее плотной — глубже. Для точных измерений важно учитывать тип шкалы, температуру и инструкцию прибора.</p></div>
+</section>
+</main>
+<footer>Интерактивный учебный проект • Физика • Тема «Ареометр»</footer>
+<script>
+const $=id=>document.getElementById(id);
+const rho=$('rho'),choice=$('liquidChoice');
+function updateLab(){
+ const d=Number(rho.value),sub=Math.max(38,Math.min(91,65-(d-1)*105));
+ $('rhoText').textContent=d.toFixed(2).replace('.',',')+' г/см³';
+ $('densityValue').textContent=d.toFixed(2).replace('.',',');
+ $('submergeValue').textContent=Math.round(sub)+'%';
+ // The float's bottom moves down as the liquid becomes less dense.
+ $('instrument').style.bottom=(80+(65-sub)*1.05)+'px';
+ $('labExplanation').textContent=d>1.04?'Жидкость плотнее воды: для равновесия ареометру нужно вытеснить меньший объём, поэтому он погружается меньше.':d<.96?'Жидкость менее плотная: ареометр должен вытеснить больший объём, поэтому погружается глубже.':'Плотность близка к плотности воды: глубина погружения средняя.';
+}
+rho.addEventListener('input',()=>{choice.value='';updateLab()});
+choice.addEventListener('change',()=>{rho.value=choice.value;updateLab()});
+$('resetLab').onclick=()=>{rho.value='1';choice.value='1.00';updateLab()};
+function calculate(){
+ const m=Number($('mass').value),v=Number($('volume').value);
+ if(!Number.isFinite(m)||!Number.isFinite(v)||m<0||v<=0){$('calcResult').textContent='—';$('calcMessage').textContent='Введи массу не меньше нуля и объём больше нуля.';return}
+ const result=m/v;
+ $('calcResult').textContent=result.toFixed(3).replace('.',',');
+ $('calcMessage').textContent=`ρ = ${m} г ÷ ${v} мл = ${result.toFixed(3).replace('.',',')} г/см³.`;
+}
+$('calculate').onclick=calculate;
+const data=[
+ {q:'Что измеряет обычный ареометр?',a:['Температуру','Плотность жидкости','Давление'],c:1,e:'Ареометр предназначен для измерения плотности жидкости.'},
+ {q:'Что происходит с ареометром в более плотной жидкости?',a:['Он погружается меньше','Он погружается глубже','Он обязательно тонет'],c:0,e:'В более плотной жидкости для равновесия достаточно вытеснить меньший объём.'},
+ {q:'Какой закон объясняет выталкивающую силу?',a:['Закон Ома','Закон Архимеда','Закон отражения'],c:1,e:'По закону Архимеда на погружённое тело действует выталкивающая сила.'},
+ {q:'Для чего нужен груз в нижней части ареометра?',a:['Чтобы прибор стоял вертикально','Чтобы нагревать жидкость','Чтобы измерять температуру'],c:0,e:'Утяжелитель помогает ареометру сохранять вертикальное положение.'},
+ {q:'Можно ли считать шкалу сахаромера и обычного ареометра одинаковой?',a:['Да, всегда','Нет, шкалы зависят от назначения прибора','Только в холодной воде'],c:1,e:'Специальные ареометры имеют шкалы, рассчитанные на конкретную величину или раствор.'},
+ {q:'Что важно сделать перед считыванием показания?',a:['Дождаться, пока прибор перестанет качаться','Нажать на ареометр ко дну','Встряхнуть сосуд'],c:0,e:'Прибор должен свободно плавать и успокоиться, не касаясь стенок и дна.'}
+];
+let selected={};
+function renderQuiz(){
+ $('questions').innerHTML=data.map((q,i)=>`<div class="quiz-q"><b>${i+1}. ${q.q}</b><div class="answers">${q.a.map((a,j)=>`<button type="button" data-q="${i}" data-a="${j}">${a}</button>`).join('')}</div><p class="muted" id="explain${i}" hidden></p></div>`).join('');
+ selected={};$('quizResult').textContent='';$('progress').style.width='0%';
+ document.querySelectorAll('.answers button').forEach(b=>b.onclick=()=>{
+  const qi=+b.dataset.q;selected[qi]=+b.dataset.a;
+  document.querySelectorAll(`button[data-q="${qi}"]`).forEach(x=>x.classList.remove('chosen'));
+  b.classList.add('chosen');$('progress').style.width=(Object.keys(selected).length/data.length*100)+'%';
+ });
+}
+$('checkQuiz').onclick=()=>{
+ let score=0;
+ data.forEach((q,i)=>{
+  document.querySelectorAll(`button[data-q="${i}"]`).forEach(b=>{
+   b.classList.remove('good','bad');
+   if(+b.dataset.a===q.c)b.classList.add('good');
+   else if(selected[i]===+b.dataset.a)b.classList.add('bad');
+  });
+  if(selected[i]===q.c)score++;
+  const ex=$('explain'+i);ex.hidden=false;ex.textContent=q.e;
+ });
+ $('quizResult').textContent=`Результат: ${score} из ${data.length}`;
+};
+$('restartQuiz').onclick=renderQuiz;
+updateLab();calculate();renderQuiz();
+</script>
+</body>
+</html>
